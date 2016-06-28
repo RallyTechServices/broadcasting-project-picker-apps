@@ -50,6 +50,7 @@ Ext.define("TSMultipleProjectGrid", {
             this.subscribe(this, 'projectsChanged', this._changeProjects, this);
             this.publish('requestProjects', this);
         }
+        this._changeProjects();
     },
     
     _changeProjects: function(picker,projects) {
@@ -66,6 +67,10 @@ Ext.define("TSMultipleProjectGrid", {
     
     _loadGridBoard: function() {
         var me = this;
+        if ( Ext.isEmpty(this._getModelNames() ) ) {
+            Ext.Msg.alert('Configuration Issue', 'Use the Edit App Settings... menu item to choose a record type for the grid');
+            
+        }
         
         this.logger.log('loadGridBoard', this._getModelNames())
         this.enableAddNew = this._shouldEnableAddNew();
@@ -188,7 +193,7 @@ Ext.define("TSMultipleProjectGrid", {
     },
     
     _getModelNames: function(){
-        return 'UserStory';
+        return this.getSetting('type');
     },
     
     _getPermanentFilters: function () {
@@ -277,7 +282,38 @@ Ext.define("TSMultipleProjectGrid", {
     },
     
     getSettingsFields: function() {
+        var type_filters = Rally.data.wsapi.Filter.or([
+            {property: 'TypePath', value: 'HierarchicalRequirement'},
+            {property: 'TypePath', operator: 'contains', value: 'PortfolioItem/'}
+        ]);
+        
         return [{
+            name: 'type',
+            xtype: 'rallycombobox',
+            allowBlank: false,
+            autoSelect: false,
+            shouldRespondToScopeChange: true,
+            fieldLabel: 'Record Type',
+            initialValue: 'HierarchicalRequirement',
+            storeConfig: {
+                model: Ext.identityFn('TypeDefinition'),
+                sorters: [{ property: 'DisplayName' }],
+                fetch: ['DisplayName', 'ElementName', 'TypePath', 'Parent', 'UserListable'],
+                filters: type_filters,
+                autoLoad: false,
+                remoteSort: false,
+                remoteFilter: true
+            },
+            displayField: 'DisplayName',
+            valueField: 'TypePath',
+            listeners: {
+                select: function (combo) {
+                    combo.fireEvent('typeselected', combo.getRecord().get('TypePath'), combo.context);
+                }
+            },
+            readyEvent: 'ready'
+        },
+        {
             name: 'showScopeSelector',
             xtype: 'rallycheckboxfield',
             fieldLabel: 'Show Scope Selector'
