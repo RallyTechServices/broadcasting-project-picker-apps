@@ -6,6 +6,7 @@ The app assumes:
 * The iterations are available in the current project and the projects share those iterations
 * Velocity = Count of points accepted _on the last day of the sprint_
 
+In the settings, an admin can enter a string to ignore -- if a sprint has the string in its name, it will not be displayed.
 
 ## Development Notes
 

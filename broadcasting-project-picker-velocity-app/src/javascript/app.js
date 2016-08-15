@@ -112,6 +112,13 @@ Ext.define("TSMultiProjectVelocity", {
     },
     
     _getRecentIterations: function(sprint_count) {
+        var filters = [{property:'EndDate', operator: '<', value: Rally.util.DateTime.toIsoString(new Date)}];
+        
+        var ignore_string = this.getSetting('ignoreSprintNamesContaining');
+        if (!Ext.isEmpty(ignore_string) ) {
+            filters.push({property:'Name',operator:'!contains',value:ignore_string});
+        }
+        
         var config = {
             limit: sprint_count,
             pageSize: sprint_count,
@@ -120,7 +127,7 @@ Ext.define("TSMultiProjectVelocity", {
                 projectScopeDown: false,
                 projectScopeUp: false
             },
-            filters: [{property:'EndDate', operator: '<', value: Rally.util.DateTime.toIsoString(new Date)}],
+            filters: filters,
             fetch: ['Name','EndDate'],
             sorters: [{property:'EndDate',direction:'DESC'}]
         }
@@ -392,6 +399,11 @@ Ext.define("TSMultiProjectVelocity", {
             name: 'showScopeSelector',
             xtype: 'rallycheckboxfield',
             fieldLabel: 'Show Scope Selector'
+        },
+        {
+            name: 'ignoreSprintNamesContaining',
+            xtype:'rallytextfield',
+            fieldLabel: 'Ignore Sprints Containing'
         }];
     },
     
